@@ -1,0 +1,40 @@
+{
+  "name": "b92f22a1-d162-49da-8850-6e3c7a6e5ff6",
+  "displayName": "agent-tool",
+  "dataStoreSpec": {
+    "dataStoreConnections": [ {
+      "dataStoreType": "UNSTRUCTURED",
+      "dataStore": "projects/11461060539/locations/us/collections/default_collection/dataStores/aurora-data-store_1762988472194",
+      "documentProcessingMode": "DOCUMENTS",
+      "engineType": "CHAT_ENGINE",
+      "connectorConfig": {
+      
+      },
+      "createTime": {
+        "seconds": 1762988475,
+        "nanos": 775158000
+      },
+      "displayName": "aurora_data_store",
+      "dialogflowAddTime": {
+        "seconds": 1762989994,
+        "nanos": 201000000
+      }
+    } ],
+    "models": {
+      "summarizationModel": {
+        "model": "default"
+      },
+      "rewriterModel": {
+        "model": "default"
+      }
+    },
+    "groundingSettings": {
+    
+    },
+    "payloadSettings": {
+    
+    },
+    "mode": "MODE_DEFAULT"
+  },
+  "toolType": "CUSTOMIZED_TOOL"
+}

@@ -1,0 +1,15 @@
+{
+  "displayName": "Aurora Agent",
+  "defaultLanguageCode": "en",
+  "timeZone": "America/Los_Angeles",
+  "projectNumber": 11461060539,
+  "advancedSettings": {
+    "loggingSettings": {
+    
+    }
+  },
+  "genAppBuilderSettings": {
+    "engine": "projects/11461060539/locations/us/collections/default_collection/engines/1cca5701-fd05-4483-86e4-9e075e53b53c-chat-1762989508"
+  },
+  "startPlaybook": "Default Generative Playbook"
+}
