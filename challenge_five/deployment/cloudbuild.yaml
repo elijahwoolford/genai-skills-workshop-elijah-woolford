@@ -5,8 +5,6 @@ steps:
       - 'build'
       - '-t'
       - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:latest'
-      - '-t'
-      - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:$SHORT_SHA'
       - '.'
   
   # Push the container image
@@ -32,7 +30,6 @@ steps:
 
 images:
   - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:latest'
-  - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:$SHORT_SHA'
 
 options:
   logging: CLOUD_LOGGING_ONLY

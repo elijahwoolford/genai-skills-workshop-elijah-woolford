@@ -4,60 +4,101 @@ Production-ready AI chatbot for the Alaska Department of Snow, helping 750,000 c
 
 ## Architecture
 
+### System Overview
+
+```mermaid
+graph TB
+    User[User Browser] -->|Question| UI[Streamlit UI<br/>Cloud Run :8080]
+    UI -->|HTTP| Agent[Alaska Snow Agent]
+    
+    Agent -->|1. Validate| Security1[Model Armor<br/>Input Validation]
+    Security1 -->|2. Send Query| Gemini[Gemini 2.5 Pro<br/>Function Calling Enabled]
+    
+    Gemini -->|3. Decides & Calls| FC{Function<br/>Calling}
+    
+    FC -->|search_alaska_faqs| RAG[BigQuery RAG<br/>Vector Search]
+    FC -->|get_alaska_weather| Weather[NWS Weather API<br/>Cached 5min]
+    
+    RAG -->|Execute| BQ[(BigQuery<br/>50 FAQs<br/>text-embedding-005)]
+    Weather -->|Execute| NWS[api.weather.gov]
+    
+    BQ -->|Top-3 FAQs JSON| FC
+    NWS -->|Alerts + Forecast JSON| FC
+    
+    FC -->|Function Results| Gemini
+    Gemini -->|4. Generate Answer| Security2[Model Armor<br/>Output Validation]
+    
+    Security2 -->|5. Log| Logging[Cloud Logging<br/>+ Function Calls]
+    Security2 -->|6. Return| UI
+    UI -->|Display| User
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         USER (Web Browser)                       │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    Streamlit Frontend (Cloud Run)                │
-│                         Port 8080                                │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Alaska Snow Agent                           │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  SECURITY LAYER (Model Armor)                            │  │
-│  │  ✓ Prompt injection detection                            │  │
-│  │  ✓ Jailbreak prevention                                  │  │
-│  │  ✓ Response validation                                   │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                             │                                    │
-│                             ▼                                    │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  RAG PIPELINE (BigQuery)                                 │  │
-│  │  ✓ Vector search with embeddings                         │  │
-│  │  ✓ text-embedding-005 model                              │  │
-│  │  ✓ Top-3 similar FAQ retrieval                           │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                             │                                    │
-│                             ▼                                    │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  WEATHER API (National Weather Service)                  │  │
-│  │  ✓ Real-time weather alerts                              │  │
-│  │  ✓ Forecast data                                         │  │
-│  │  ✓ 5-minute caching                                      │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                             │                                    │
-│                             ▼                                    │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  GEMINI 2.5 PRO                                          │  │
-│  │  ✓ Context-aware answer generation                       │  │
-│  │  ✓ ADS system instructions                               │  │
-│  │  ✓ Temperature: 0.2                                      │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Cloud Logging & Trace                               │
-│  ✓ All queries and responses logged                             │
-│  ✓ Performance metrics tracked                                  │
-│  ✓ Security events monitored                                    │
-└─────────────────────────────────────────────────────────────────┘
+
+### Request Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Streamlit
+    participant A as Agent
+    participant M as Model Armor
+    participant G as Gemini
+    participant R as BigQuery RAG
+    participant W as Weather API
+    participant L as Cloud Logging
+
+    U->>S: Ask question
+    S->>A: answer_question()
+    A->>M: validate_input()
+    M-->>A: ✓ Safe
+    
+    A->>G: send_message(query, tools=[search_faqs, get_weather])
+    G->>G: Analyze question & decide tools
+    
+    alt Gemini calls search_alaska_faqs
+        G-->>A: function_call: search_alaska_faqs
+        A->>R: VECTOR_SEARCH
+        R-->>A: Top-3 FAQs (JSON)
+        A->>G: function_response (FAQ results)
+    end
+    
+    alt Gemini calls get_alaska_weather
+        G-->>A: function_call: get_alaska_weather
+        A->>W: get_alerts() + forecast()
+        W-->>A: Weather data (JSON)
+        A->>G: function_response (weather results)
+    end
+    
+    G->>G: Generate answer using function results
+    G-->>A: Final answer text
+    A->>M: validate_output()
+    M-->>A: ✓ Safe
+    A->>L: Log (query, functions_called, answer)
+    A-->>S: Response
+    S-->>U: Display answer
 ```
+
+## Key Features
+
+### 🤖 Function Calling
+- Gemini intelligently decides which tools to use
+- `search_alaska_faqs`: Searches FAQ database
+- `get_alaska_weather`: Fetches weather data
+- Parallel function execution when needed
+
+### 🔒 Security
+- Model Armor input/output validation
+- Validates before and after function calls
+
+### 🔍 RAG
+- BigQuery vector search with text-embedding-005
+- 50 FAQ entries from CSV + TXT files
+
+### 🌤️ Weather
+- National Weather Service API
+- Real-time alerts and forecasts
+
+### 📊 Logging
+- Cloud Logging tracks all interactions and function calls
 
 ## Prerequisites
 
@@ -158,18 +199,44 @@ Access at: `http://localhost:8501` (Streamlit) or `http://localhost:8080` (FastA
 
 ## Testing
 
+### Run All Tests
 ```bash
-# Run all tests
 pytest tests/ -v
 
-# Run specific test file
-pytest tests/test_agent.py -v
-
-# Run with coverage
-pytest tests/ --cov=app --cov-report=html
+# 18 tests: 14 unit tests (mocked) + 4 integration tests (live)
 ```
 
-**Note**: Tests use mocking and don't require live GCP resources.
+### Unit Tests (Mocked - No GCP Required)
+```bash
+pytest tests/test_agent.py tests/test_rag.py tests/test_security.py tests/test_weather_api.py -v
+```
+
+### Integration Tests (Function Calling - Requires GCP)
+```bash
+pytest tests/test_agent_eval.py -v -s
+
+# Verifies:
+# - Gemini function calling works
+# - RAG retrieval via search_alaska_faqs function
+# - Weather API via get_alaska_weather function  
+# - Security validation
+```
+
+### Model Armor Integration Tests (Live)
+Run a pytest that issues three live queries (safe, blocked, out-of-domain) through Model Armor + Gemini.
+
+```bash
+pytest tests/integration/security_integration.py -v -s
+
+# Requires:
+# - Application Default Credentials with access to project qwiklabs-gcp-01-752385122246
+# - Model Armor template alaska-snow-guard configured in us-central1
+```
+
+### With Coverage
+```bash
+pytest tests/ --cov=app --cov-report=html
+```
 
 ## Evaluation
 

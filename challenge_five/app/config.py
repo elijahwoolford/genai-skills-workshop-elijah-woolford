@@ -28,7 +28,7 @@ MODEL_ARMOR_RESPONSE_ENDPOINT = (
 # Gemini Configuration
 GEMINI_MODEL = "gemini-2.5-pro"
 GENERATION_TEMPERATURE = 0.2
-MAX_OUTPUT_TOKENS = 1024
+MAX_OUTPUT_TOKENS = 2048
 
 # National Weather Service API
 NWS_API_BASE = "https://api.weather.gov"

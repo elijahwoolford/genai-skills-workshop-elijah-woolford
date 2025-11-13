@@ -94,11 +94,13 @@ async def ask_question(request: QuestionRequest):
         
         processing_time = (time.time() - start_time) * 1000  # Convert to ms
         
-        # Log response
+        # Log response with full prompt and answer
         logger.log_struct({
             "event": "answer_generated",
             "query": request.query,
+            "answer": result["answer"],  # Full response text
             "answer_length": len(result["answer"]),
+            "functions_called": result.get("functions_called", []),  # Function calls made
             "rag_used": result["rag_context_used"],
             "weather_used": result["weather_data_used"],
             "security_passed": result["security_passed"],
