@@ -1,0 +1,36 @@
+# Core dependencies
+google-cloud-aiplatform[evaluation]>=1.38.0
+google-cloud-bigquery>=3.11.0
+google-cloud-logging>=3.5.0
+google-cloud-trace>=1.11.0
+google-cloud-bigquery-connection>=1.12.0
+vertexai>=1.38.0
+tqdm>=4.66.0
+
+# Web frameworks
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+streamlit>=1.28.0
+
+# HTTP and APIs
+requests>=2.31.0
+httpx>=0.25.0
+
+# Data processing
+pandas>=2.1.0
+numpy>=1.24.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.12.0
+pytest-cov>=4.1.0
+
+# Security and auth
+google-auth>=2.23.0
+google-auth-httplib2>=0.1.1
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.4.0
+

@@ -1,0 +1,39 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '-t'
+      - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:latest'
+      - '-t'
+      - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:$SHORT_SHA'
+      - '.'
+  
+  # Push the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:latest'
+  
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'alaska-snow-agent'
+      - '--image=gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--memory=2Gi'
+      - '--cpu=2'
+      - '--set-env-vars=GCP_PROJECT_ID=qwiklabs-gcp-01-752385122246,GCP_REGION=us-central1'
+
+images:
+  - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:latest'
+  - 'gcr.io/qwiklabs-gcp-01-752385122246/alaska-snow-agent:$SHORT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
